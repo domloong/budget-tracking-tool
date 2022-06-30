@@ -29,5 +29,8 @@ def main():
     Also need to ensure we deal with dollar amount as string and upload back as float
 
 
+    Also think about how to handle yearly change
+
+
 if __name__ == "__main__":
     main()
