@@ -1,9 +1,7 @@
 import gspread
 
-gc = gspread.oauth()
+gc = gspread.service_account()
 
-gc.create('Example spreadsheet')
-
-sh = gc.open("Example spreadsheet")
+sh = gc.open("Budget Tracking Tool - 2022 - Tester")
 
 print(sh.sheet1.get('A1'))
