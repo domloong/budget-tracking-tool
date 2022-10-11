@@ -17,6 +17,9 @@ df = pd.read_csv("report.csv")
 df = df[["Date", "Description", "Amount"]]
 
 df["Date"] = df["Date"].apply(lambda x: datetime.strptime(x, "%m/%d/%Y"))
+
+df_new_expenses = df[df.Amount < 0 ]
+
 # def main():
 #     import_csv()
 #         figure out which csv belongs to which tabs
