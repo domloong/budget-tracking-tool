@@ -23,6 +23,8 @@ df_new_expenses = df[df.Amount < 0 ]
 
 df_new = pd.concat([df_new_expenses, df_sheet])
 
+df_refunds = df[(df.Amount > 0) & (~df.Description.str.contains("Payment"))]
+
 # def main():
 #     import_csv()
 #         figure out which csv belongs to which tabs
