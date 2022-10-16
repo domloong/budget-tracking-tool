@@ -4,7 +4,7 @@ import pandas as pd
 
 from datetime import datetime
 
-def extract_sheet_tab_dataframe(sheet_values):
+def extract_gsheet_into_dataframes(sheet_values):
     dict_df = {}
 
     for tab, value_ranges in zip(config.sheet_tabs.keys(), sheet_values["valueRanges"]):
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
     sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
 
-    dict_df = extract_sheet_tab_dataframe(sheet_values)
+    dict_df = extract_gsheet_into_dataframes(sheet_values)
 
 
 
