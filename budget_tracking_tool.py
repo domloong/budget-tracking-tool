@@ -19,6 +19,19 @@ def extract_gsheet_into_dataframes(sheet_values):
 
     return dict_df
 
+def extract_mastercard_into_dataframes(df_sheet):
+    df = pd.read_csv("report.csv")
+    df = df[["Date", "Description", "Amount"]]
+    df["Date"] = df["Date"].apply(lambda x: datetime.strptime(x, "%m/%d/%Y"))
+    df = df[df.Date > df_sheet.Date.max()]
+
+    df_expenses = df[df.Amount < 0]
+    df_expenses.Amount = df_expenses.Amount.apply(abs)
+
+    df_refunds = df[(df.Amount > 0) & (~df.Description.str.contains("Payment"))]
+
+    return df_expenses, df_refunds
+
 
 if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
@@ -26,15 +39,9 @@ if __name__ == "__main__":
 
     dict_df = extract_gsheet_into_dataframes(sheet_values)
 
+    df_mastercard_expense, df_mastercard_refund = extract_mastercard_into_dataframes(dict_df["mastercard"])
 
 
-# df = pd.read_csv("report.csv")
-# df = df[["Date", "Description", "Amount"]]
-
-# df["Date"] = df["Date"].apply(lambda x: datetime.strptime(x, "%m/%d/%Y"))
-
-# df_new_expenses = df[(df.Amount < 0) & (df.Date > df_sheet.Date.max())]
-# df_new_expenses.Amount = df_new_expenses.Amount.apply(abs)
 
 # df_new = pd.concat([df_new_expenses, df_sheet])
 
@@ -46,36 +53,4 @@ if __name__ == "__main__":
 
 # values = df_new.values.tolist()
 
-# df_refunds = df[(df.Amount > 0) & (~df.Description.str.contains("Payment"))]
-
 # ws.update("B8:D", values)
-
-# def main():
-#     import_csv()
-#         figure out which csv belongs to which tabs
-
-#             split between expenses and income
-
-#         return all imports as a dictionary containing the data
-
-
-#     update_expenses()
-
-#         get all values from each sheet 
-
-#         compare timestamp and the csv data where not in sheet  
-
-#         combine to make a new dataframe
-
-
-#     update_income()
-
-#     similar as above but for expenses
-
-
-#     Also need to ensure we deal with dollar amount as string and upload back as float
-
-
-#     Also think about how to handle yearly change
-
-
