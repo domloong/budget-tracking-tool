@@ -4,39 +4,49 @@ import pandas as pd
 
 from datetime import datetime
 
-gc = gspread.service_account()
+def extract_sheet_tab_dataframe(sheet_values):
+    dict_df = {}
 
-sh = gc.open(config.SHEET_NAME)
+    for tab, value_ranges in zip(config.sheet_tabs.keys(), sheet_values["valueRanges"]):
+        df = pd.DataFrame(value_ranges["values"])
+        df = df.drop(df[df[0] == ""].index)
+        df = df.rename(columns = {0:"Date", 1:"Description", 2:"Amount"})
+        df.Date = df.Date.apply(lambda x: datetime.strptime(x, config.date_formats["sheet"]))
+        df.Amount = df.Amount.apply(lambda x: float(x.replace("$", "").replace(",", "")))
+        dict_df[tab] = df
 
-result = sh.values_batch_get(["Mastercard Expense!B8:D", "VISA Expense!B8:D", "Income!B8:D"])
+    return dict_df
 
-df_sheet = pd.DataFrame(result["valueRanges"][0]["values"])
-df_sheet = df_sheet.drop(df_sheet[df_sheet[0] == ""].index)
-df_sheet[0] = df_sheet[0].apply(lambda x: datetime.strptime(x, "%m-%d-%Y"))
-df_sheet = df_sheet.rename(columns = {0:"Date", 1:"Description", 2:"Amount"})
-df_sheet.Amount = df_sheet.Amount.apply(lambda x: float(x[1:]))
 
-df = pd.read_csv("report.csv")
-df = df[["Date", "Description", "Amount"]]
+if __name__ == "__main__":
+    sh = gspread.service_account().open(config.SHEET_NAME)
+    sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
 
-df["Date"] = df["Date"].apply(lambda x: datetime.strptime(x, "%m/%d/%Y"))
+    dict_df = extract_sheet_tab_dataframe(sheet_values)
 
-df_new_expenses = df[(df.Amount < 0) & (df.Date > df_sheet.Date.max())]
-df_new_expenses.Amount = df_new_expenses.Amount.apply(abs)
 
-df_new = pd.concat([df_new_expenses, df_sheet])
 
-df_new["Date"] = df_new["Date"].apply(lambda x: datetime.strftime(x, "%m-%d-%Y"))
+# df = pd.read_csv("report.csv")
+# df = df[["Date", "Description", "Amount"]]
 
-df_new = df_new.sort_values("Date")
+# df["Date"] = df["Date"].apply(lambda x: datetime.strptime(x, "%m/%d/%Y"))
 
-ws = sh.worksheet("Mastercard Expense")
+# df_new_expenses = df[(df.Amount < 0) & (df.Date > df_sheet.Date.max())]
+# df_new_expenses.Amount = df_new_expenses.Amount.apply(abs)
 
-values = df_new.values.tolist()
+# df_new = pd.concat([df_new_expenses, df_sheet])
 
-df_refunds = df[(df.Amount > 0) & (~df.Description.str.contains("Payment"))]
+# df_new["Date"] = df_new["Date"].apply(lambda x: datetime.strftime(x, "%m-%d-%Y"))
 
-ws.update("B8:D", values)
+# df_new = df_new.sort_values("Date")
+
+# ws = sh.worksheet("Mastercard Expense")
+
+# values = df_new.values.tolist()
+
+# df_refunds = df[(df.Amount > 0) & (~df.Description.str.contains("Payment"))]
+
+# ws.update("B8:D", values)
 
 # def main():
 #     import_csv()
@@ -67,5 +77,3 @@ ws.update("B8:D", values)
 #     Also think about how to handle yearly change
 
 
-# if __name__ == "__main__":
-#     main()
