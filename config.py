@@ -8,3 +8,5 @@ EXPENSE_TAB = "Expenses"
 
 SHEET_RANGE = "B8:D"
 
+SHEET_DATE_FORMAT = "%m-%d-%Y"
+MASTERCARD_DATE_FORMAT = "%m/%d/%Y"
