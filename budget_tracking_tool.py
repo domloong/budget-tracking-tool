@@ -1,8 +1,10 @@
-import config
+from datetime import datetime
+
 import gspread
 import pandas as pd
 
-from datetime import datetime
+import config
+
 
 def extract_gsheet_into_dataframes(sheet_values):
     dict_df = {}
