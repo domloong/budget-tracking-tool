@@ -44,6 +44,7 @@ def format_cibc_csv(df):
     df.columns = range(df.columns.size)
     df.loc[0, 3] = np.NaN
     df = df.rename(columns={0: "Date", 1: "Description", 2: "Expenses", 3: "Refunds"})
+    df.Date = df.Date.apply(lambda x: datetime.strptime(x, config.date_formats["cibc"]))
 
     return df
 
@@ -51,7 +52,6 @@ def format_cibc_csv(df):
 def extract_visa_into_dataframes(df_sheet):
     df = pd.read_csv("cibc.csv")
     df = format_cibc_csv(df)
-    df.Date = df.Date.apply(lambda x: datetime.strptime(x, config.date_formats["cibc"]))
 
     df_expense = df[["Date", "Description", "Expenses"]].dropna()
     df_expense = df_expense.rename(columns={"Expenses": "Amount"})
