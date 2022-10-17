@@ -10,4 +10,4 @@ sheet_tabs = {
     "expense": "Expenses",
 }
 
-date_formats = {"sheet": "%m-%d-%Y", "mastercard": "%m/%d/%Y"}
+date_formats = {"sheet": "%m-%d-%Y", "mastercard": "%m/%d/%Y", "cibc": "%Y-%m-%d"}
