@@ -78,6 +78,12 @@ def construct_upload_df(current_df, append_dfs):
     return df
 
 
+def upload_to_sheet(tab_name, df):
+    ws = sh.worksheet(tab_name)
+    values = df.values.tolist()
+    ws.update(config.SHEET_RANGE, values)
+
+
 if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
     sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
@@ -90,12 +96,3 @@ if __name__ == "__main__":
     dict_expenses["mastercard"], dict_income["mastercard"] = extract_mastercard_into_dataframes(dict_df["mastercard"])
 
     dict_expenses["visa"], dict_income["visa"] = extract_visa_into_dataframes(dict_df["visa"])
-
-
-
-
-# ws = sh.worksheet("Mastercard Expense")
-
-# values = df_new.values.tolist()
-
-# ws.update("B8:D", values)
