@@ -94,5 +94,7 @@ if __name__ == "__main__":
     dict_income = {}
 
     dict_expenses["mastercard"], dict_income["mastercard"] = extract_mastercard_into_dataframes(dict_df["mastercard"])
-
     dict_expenses["visa"], dict_income["visa"] = extract_visa_into_dataframes(dict_df["visa"])
+
+    df_income_upload = construct_upload_df(dict_df["income"], dict_income)
+    df_expense_upload = construct_upload_df(dict_df["expense"], dict_expenses)
