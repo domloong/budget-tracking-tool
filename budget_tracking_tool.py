@@ -63,22 +63,36 @@ def extract_visa_into_dataframes(df_sheet):
     return df_expense, df_refund
 
 
+def construct_upload_df(current_df, append_dfs):
+    concat_dfs = [current_df]
+
+    if type(append_dfs) == dict:
+        concat_dfs.extend([df for df in append_dfs.values()])
+    else:
+        concat_dfs.append(append_dfs)
+
+    df = pd.concat(concat_dfs)
+    df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
+    df = df.sort_values("Date")
+
+    return df
+
+
 if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
     sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
 
     dict_df = extract_gsheet_into_dataframes(sheet_values)
 
-    df_mastercard_expense, df_mastercard_refund = extract_mastercard_into_dataframes(dict_df["mastercard"])
+    dict_expenses = {}
+    dict_income = {}
 
-    df_visa_expense, df_visa_refund = extract_visa_into_dataframes(dict_df["visa"])
+    dict_expenses["mastercard"], dict_income["mastercard"] = extract_mastercard_into_dataframes(dict_df["mastercard"])
+
+    dict_expenses["visa"], dict_income["visa"] = extract_visa_into_dataframes(dict_df["visa"])
 
 
-# df_new = pd.concat([df_new_expenses, df_sheet])
 
-# df_new["Date"] = df_new["Date"].apply(lambda x: datetime.strftime(x, "%m-%d-%Y"))
-
-# df_new = df_new.sort_values("Date")
 
 # ws = sh.worksheet("Mastercard Expense")
 
