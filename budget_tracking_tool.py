@@ -23,8 +23,7 @@ def extract_gsheet_into_dataframes(sheet_values):
     return dict_df
 
 
-def extract_mastercard_into_dataframes(df_sheet):
-    df = pd.read_csv("report.csv")
+def extract_mastercard_into_dataframes(df_sheet, df):
     df = df[["Date", "Description", "Amount"]]
     df["Date"] = df["Date"].apply(lambda x: datetime.strptime(x, config.date_formats["mastercard"]))
     df = df[df.Date > df_sheet.Date.max()]
@@ -46,6 +45,9 @@ def format_cibc_csv(df):
     df = df.rename(columns={0: "Date", 1: "Description", 2: "Expenses", 3: "Refunds"})
     df.Date = df.Date.apply(lambda x: datetime.strptime(x, config.date_formats["cibc"]))
 
+    return df
+
+def split_cibc_df(df):
     df_expense = df[["Date", "Description", "Expenses"]].dropna()
     df_expense = df_expense.rename(columns={"Expenses": "Amount"})
 
@@ -55,15 +57,15 @@ def format_cibc_csv(df):
     return df_expense, df_revenue
 
 
-def extract_visa_into_dataframes(df_sheet):
-    df = pd.read_csv("cibc.csv")
+def extract_visa_into_dataframes(df_sheet, df):
     df_expense, df_revenue = format_cibc_csv(df)
 
     df_revenue = df_revenue[~df_revenue.Description.str.contains("PAYMENT")]
 
     return df_expense, df_revenue
 
-def extract_chequing_into_dataframes(df_sheet):
+
+def extract_chequing_into_dataframes(df_sheet, df):
     df = pd.read_csv("cibc-2.csv")
     df_expense, df_revenue = format_cibc_csv(df)
 
@@ -72,7 +74,6 @@ def extract_chequing_into_dataframes(df_sheet):
     df_revenue = df_revenue[~df_revenue.Description.str.contains("INTERNET TRANSFER")]
 
     return df_expense, df_revenue
-
 
 
 def construct_upload_df(current_df, append_dfs):
@@ -96,18 +97,35 @@ def upload_to_sheet(tab_name, df):
     ws.update(config.SHEET_RANGE, values)
 
 
+def extract_from_csvs(dict_df):
+    dict_expenses = {}
+    dict_revenues = {}
+
+    for csv in config.csv_list:
+        if csv == "report.csv":
+            df = pd.read_csv(csv)
+            dict_expenses["mastercard"], dict_revenues["mastercard"] = extract_mastercard_into_dataframes(
+                dict_df["mastercard"], df
+            )
+        else:
+            df = pd.read_csv(csv)
+            df = format_cibc_csv(df)
+            if df.Description.str.contains("2nd Site|INTERNET TRANSFER", regex=True).any():
+                dict_expenses["chequing"], dict_revenues["chequing"] = extract_chequing_into_dataframes(dict_df["chequing"], df)
+            else:
+                dict_expenses["visa"], dict_revenues["visa"] = extract_visa_into_dataframes(dict_df["visa"], df)
+
+    return dict_expenses, dict_revenues
+
+
+
 if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
     sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
 
     dict_df = extract_gsheet_into_dataframes(sheet_values)
 
-    dict_expenses = {}
-    dict_revenues = {}
-
-    dict_expenses["mastercard"], dict_revenues["mastercard"] = extract_mastercard_into_dataframes(dict_df["mastercard"])
-    dict_expenses["visa"], dict_revenues["visa"] = extract_visa_into_dataframes(dict_df["visa"])
-    dict_expenses["chequing"], dict_revenues["chequing"] = extract_chequing_into_dataframes(dict_df["chequing"])
+    dict_expenses, dict_revenues = extract_from_csvs(dict_df)
 
     df_income_upload = construct_upload_df(dict_df["income"], dict_revenues)
     df_expense_upload = construct_upload_df(dict_df["expense"], dict_expenses)
