@@ -67,6 +67,9 @@ def extract_chequing_into_dataframes(df_sheet):
     df = pd.read_csv("cibc-2.csv")
     df_expense, df_revenue = format_cibc_csv(df)
 
+    df_expense = df_expense[~df_expense.Description.str.contains("INTERNET TRANSFER|MASTERCARD", regex=True)]
+
+    df_revenue = df_revenue[~df_revenue.Description.str.contains("INTERNET TRANSFER")]
 
     return df_expense, df_revenue
 
@@ -104,6 +107,8 @@ if __name__ == "__main__":
 
     dict_expenses["mastercard"], dict_revenues["mastercard"] = extract_mastercard_into_dataframes(dict_df["mastercard"])
     dict_expenses["visa"], dict_revenues["visa"] = extract_visa_into_dataframes(dict_df["visa"])
+    dict_expenses["chequing"], dict_revenues["chequing"] = extract_chequing_into_dataframes(dict_df["chequing"])
 
     df_income_upload = construct_upload_df(dict_df["income"], dict_revenues)
     df_expense_upload = construct_upload_df(dict_df["expense"], dict_expenses)
+    df_chequing_upload = construct_upload_df(dict_df["chequing"], dict_expenses["chequing"])
