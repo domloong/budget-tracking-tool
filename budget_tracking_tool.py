@@ -123,9 +123,9 @@ if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
     sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
 
-    dict_df = extract_gsheet_into_dataframes(sheet_values)
+    dict_sheet_df = extract_gsheet_into_dataframes(sheet_values)
 
-    dict_expenses, dict_revenues = extract_from_csvs(dict_df)
+    dict_updated_expenses, dict_updated_revenues = extract_from_csvs(dict_sheet_df)
 
     # df_income_upload = construct_upload_df(dict_df["income"], dict_revenues)
     # df_expense_upload = construct_upload_df(dict_df["expense"], dict_expenses)
