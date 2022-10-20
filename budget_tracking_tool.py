@@ -125,7 +125,9 @@ def upload_to_sheet(tab_name, df):
 
 if __name__ == "__main__":
     sh = gspread.service_account().open(config.SHEET_NAME)
-    sheet_values = sh.values_batch_get([tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()])
+
+    sheet_tabs = [tab_name + "!" + config.SHEET_RANGE for tab_name in config.sheet_tabs.values()]
+    sheet_values = sh.values_batch_get(sheet_tabs)
 
     dict_sheet_df = extract_gsheet_into_dataframes(sheet_values)
 
