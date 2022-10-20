@@ -1,3 +1,4 @@
+from cmath import exp
 from datetime import datetime
 
 import gspread
@@ -102,25 +103,30 @@ def extract_from_csvs(dict_df):
     return dict_expenses, dict_revenues
 
 
-def construct_upload_df(current_df, append_dfs):
-    concat_dfs = [current_df]
-
-    if type(append_dfs) == dict:
-        concat_dfs.extend([df for df in append_dfs.values()])
-    else:
-        concat_dfs.append(append_dfs)
-
-    df = pd.concat(concat_dfs)
-    df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
-    df = df.sort_values("Date")
-
-    return df
-
-
 def upload_to_sheet(tab_name, df):
     ws = sh.worksheet(tab_name)
     values = df.values.tolist()
     ws.update(config.SHEET_RANGE, values)
+
+
+def construct_upload_df(current_df, new_df):
+    df = pd.concat([current_df, new_df])
+    df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
+    df = df.sort_values("Date")
+    df["Amount"] = df["Amount"].astype(float)
+
+    return df
+
+
+def batch_upload_to_sheet(sheet, expenses, revenues):
+    new_data = expenses
+
+    new_data["expense"] = pd.concat([expense for expense in expenses.values()])
+    new_data["income"] = pd.concat([revenue for revenue in revenues.values()])
+
+    for key, value in config.sheet_tabs.items():
+        new_df = construct_upload_df(sheet[key], new_data[key])
+        upload_to_sheet(value, new_df)
 
 
 if __name__ == "__main__":
@@ -133,6 +139,4 @@ if __name__ == "__main__":
 
     dict_updated_expenses, dict_updated_revenues = extract_from_csvs(dict_sheet_df)
 
-    # df_income_upload = construct_upload_df(dict_df["income"], dict_revenues)
-    # df_expense_upload = construct_upload_df(dict_df["expense"], dict_expenses)
-    # df_chequing_upload = construct_upload_df(dict_df["chequing"], dict_expenses["chequing"])
+    batch_upload_to_sheet(dict_sheet_df, dict_updated_expenses, dict_updated_revenues)
