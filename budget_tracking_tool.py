@@ -59,6 +59,8 @@ def split_cibc_df(df):
 
 
 def extract_visa_into_dataframes(df_sheet, df):
+    df = df[df.Date > df_sheet.Date.max()]
+
     df_expense, df_revenue = split_cibc_df(df)
 
     df_revenue = df_revenue[~df_revenue.Description.str.contains("PAYMENT")]
@@ -67,6 +69,8 @@ def extract_visa_into_dataframes(df_sheet, df):
 
 
 def extract_chequing_into_dataframes(df_sheet, df):
+    df = df[df.Date > df_sheet.Date.max()]
+
     df_expense, df_revenue = split_cibc_df(df)
 
     df_expense = df_expense[~df_expense.Description.str.contains("INTERNET TRANSFER|MASTERCARD", regex=True)]
