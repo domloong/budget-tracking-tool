@@ -1,4 +1,3 @@
-from cmath import exp
 from datetime import datetime
 
 import gspread
@@ -106,13 +105,13 @@ def extract_from_csvs(dict_df):
 def upload_to_sheet(tab_name, df):
     ws = sh.worksheet(tab_name)
     values = df.values.tolist()
-    ws.update(config.SHEET_RANGE, values)
+    ws.update(config.SHEET_RANGE, values, value_input_option="USER_ENTERED")
 
 
 def construct_upload_df(current_df, new_df):
     df = pd.concat([current_df, new_df])
-    df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
     df = df.sort_values("Date")
+    df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
     df["Amount"] = df["Amount"].astype(float)
 
     return df

@@ -13,3 +13,5 @@ sheet_tabs = {
 date_formats = {"sheet": "%m-%d-%Y", "mastercard": "%m/%d/%Y", "cibc": "%Y-%m-%d"}
 
 csv_list = ["report.csv", "cibc.csv", "cibc-2.csv"]
+
+download_path = "/Users/dom.loong/Downloads/"
