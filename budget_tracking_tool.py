@@ -62,9 +62,9 @@ def split_cibc_df(df):
 def extract_visa_into_dataframes(df_sheet, df):
     df = df[df.Date > df_sheet.Date.max()]
 
-    df_expense, df_revenue = split_cibc_df(df)
+    df = df[~df.Description.str.contains("PAYMENT")]
 
-    df_revenue = df_revenue[~df_revenue.Description.str.contains("PAYMENT")]
+    df_expense, df_revenue = split_cibc_df(df)
 
     return df_expense, df_revenue
 
@@ -115,6 +115,7 @@ def construct_upload_df(current_df, new_df):
     df = df.sort_values("Date")
     df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
     df["Amount"] = df["Amount"].astype(float)
+    df = df[df["Amount"] < 10000]
 
     return df
 
