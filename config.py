@@ -1,4 +1,4 @@
-SHEET_NAME = "Budget Tracking Tool - 2022 - Tester"
+SHEET_NAME = "Budget Tracking Tool - 2022"
 SHEET_RANGE = "B8:D"
 COLUMN_NAMES = ["Date", "Description", "Amount"]
 
