@@ -1,4 +1,5 @@
 from datetime import datetime
+from pathlib import Path
 
 import gspread
 import numpy as np
@@ -83,9 +84,10 @@ def extract_chequing_into_dataframes(df_sheet, df):
 def extract_from_csvs(dict_df):
     dict_expenses = {}
     dict_revenues = {}
+    csv_path = Path(config.csv_path)
 
     for csv in config.csv_list:
-        df = pd.read_csv(csv)
+        df = pd.read_csv(csv_path / csv)
         if csv == "report.csv":
             dict_expenses["mastercard"], dict_revenues["mastercard"] = extract_mastercard_into_dataframes(
                 dict_df["mastercard"], df
