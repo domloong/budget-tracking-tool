@@ -42,7 +42,12 @@ def format_cibc_csv(df):
     df.sort_index(inplace=True)
     df.reset_index(drop=True, inplace=True)
     df.columns = range(df.columns.size)
-    df.loc[0, 3] = np.NaN
+
+    if "Unnamed" in df.loc[0, 2]:
+        df.loc[0, 2] = np.NaN
+    else:
+        df.loc[0, 3] = np.NaN
+
     df = df.rename(columns={0: "Date", 1: "Description", 2: "Expenses", 3: "Refunds"})
     df.Date = df.Date.apply(lambda x: datetime.strptime(x, config.date_formats["cibc"]))
 
