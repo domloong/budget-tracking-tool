@@ -109,20 +109,21 @@ def extract_from_csvs(dict_df):
     return dict_expenses, dict_revenues
 
 
-def upload_to_sheet(tab_name, df):
+def upload_to_sheet(tab_name, df, data_rows):
     ws = sh.worksheet(tab_name)
     values = df.values.tolist()
-    ws.update(config.SHEET_RANGE, values, value_input_option="USER_ENTERED")
+    ws.update(f"B{8 + data_rows}:D", values, value_input_option="USER_ENTERED")
 
 
-def construct_upload_df(current_df, new_df):
-    df = pd.concat([current_df, new_df])
+def construct_upload_df(current_df, df):
+    data_rows = len(current_df)
+
     df = df.sort_values("Date")
     df["Date"] = df["Date"].apply(lambda x: datetime.strftime(x, config.date_formats["sheet"]))
     df["Amount"] = df["Amount"].astype(float)
     df = df[df["Amount"] < 10000]
 
-    return df
+    return df, data_rows
 
 
 def batch_upload_to_sheet(sheet, expenses, revenues):
@@ -132,8 +133,8 @@ def batch_upload_to_sheet(sheet, expenses, revenues):
     new_data["income"] = pd.concat([revenue for revenue in revenues.values()])
 
     for key, value in config.sheet_tabs.items():
-        new_df = construct_upload_df(sheet[key], new_data[key])
-        upload_to_sheet(value, new_df)
+        new_df, data_rows = construct_upload_df(sheet[key], new_data[key])
+        upload_to_sheet(value, new_df, data_rows)
 
 
 if __name__ == "__main__":
